@@ -4,16 +4,13 @@
  * displays them in the header, and provides a way to update them.
  */
 
-var username;
-var bio;
-
 /**
  * Updates the profile display in the header.
  */
 function updateProfileDisplay() {
   const profileInfoEl = document.getElementById('profile-info');
   if (profileInfoEl) {
-    profileInfoEl.innerHTML = `<strong>${username}</strong><br>${bio}`;
+    profileInfoEl.innerHTML = `<strong>${localStorage.getItem('username')}</strong><br>${localStorage.getItem('bio')}`;
   }
 }
 
@@ -21,15 +18,31 @@ function updateProfileDisplay() {
  * Prompts the user to input profile information and updates the display.
  */
 function promptProfile() {
-  username = prompt("Enter your username:", username || "DefaultUser") || username || "DefaultUser";
-  bio = prompt("Enter your bio:", bio || "Hello, I'm new here!") || bio || "Hello, I'm new here!";
+  const username = prompt("Enter your username:", localStorage.getItem('username') || "") || localStorage.getItem('username') || "newbie";
+  const bio = prompt("Enter your bio:", localStorage.getItem('bio') || "Hello, I'm new here!") || localStorage.getItem('bio') || "Hello, I'm new here!";
+
+  localStorage.setItem('username', username);
+  localStorage.setItem('bio', bio);
+
   updateProfileDisplay();
+
+  // Send the profile info as a kind 0 event
+  if (typeof sendKind0Profile === "function") {
+    sendKind0Profile(username, bio);
+  }
 }
 
 // Initialize profile when the DOM is fully loaded
 document.addEventListener('DOMContentLoaded', function() {
   // Prompt for initial profile info
-  promptProfile();
+
+  let storedUsername = localStorage.getItem('username');
+  if (!storedUsername) {
+    promptProfile();
+  }
+
+  updateProfileDisplay();
+
 
   // Set up the event listener for changing profile info
   const editButton = document.getElementById('edit-profile');
