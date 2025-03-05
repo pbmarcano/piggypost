@@ -10,7 +10,9 @@
   <body class="min-h-screen flex flex-col">
     <!-- Header Section for User Info (placeholder) -->
     <header class="p-4 bg-gray-200 sticky top-0">
-      User Info (Placeholder)
+      <div id="profile-info">User Info (Placeholder)</div>
+      <!-- Button to trigger profile change -->
+      <button id="edit-profile" class="mt-2 text-blue-500 underline">Edit Profile</button>
     </header>
 
     <!-- Main Chat Feed Container -->
@@ -34,6 +36,7 @@
 
     <!-- Include Nostr Key Management Script -->
     <script src="scripts/nostr-keys.js"></script>
+    <script src="scripts/profile.js"></script>
     <!-- Placeholder for vanilla JavaScript -->
     <script>
       // Your JavaScript code can go here
