@@ -8,7 +8,7 @@ import { generateSecretKey, getPublicKey } from 'nostr-tools/pure';
 import { bytesToHex } from "@noble/hashes/utils"
 
 function getKeyPair() {
-  // Try to get key pair from localStorage or sessionStorage
+  // Try to get key pair from localStorage
   let storedKeyPair = localStorage.getItem('keyPair');
 
   if (storedKeyPair) {
@@ -25,6 +25,8 @@ function getKeyPair() {
 
   // Store the new key pair in localStorage
   localStorage.setItem('keyPair', JSON.stringify(newKeyPair));
+  localStorage.setItem('seckey', newKeyPair.seckey);
+  localStorage.setItem('pubkey', newKeyPair.pubkey);
 
   return newKeyPair;
 }
@@ -38,8 +40,8 @@ function generateKeyPair() {
   let pk = getPublicKey(sk);
 
   return {
-    pubKey: pk,
-    prvKey: bytesToHex(sk)
+    pubkey: pk,
+    seckey: bytesToHex(sk)
   };
 }
 
