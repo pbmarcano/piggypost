@@ -8,6 +8,7 @@
       {
         "imports": {
           "nostr-tools/pure": "https://cdn.jsdelivr.net/npm/nostr-tools@2.10.4/+esm",
+          "nostr-tools/relay": "https://cdn.jsdelivr.net/npm/nostr-tools@2.10.4/+esm",
           "@noble/hashes/utils": "https://esm.sh/@noble/hashes@1.7.1/utils"
         }
       }
@@ -18,7 +19,7 @@
   <body class="min-h-screen flex flex-col">
     <!-- Header Section for User Info (placeholder) -->
     <header class="p-4 bg-gray-200 sticky top-0">
-      <div id="profile-info">User Info (Placeholder)</div>
+      <div id="profile-info">Username</div>
       <!-- Button to trigger profile change -->
       <button id="edit-profile" class="mt-2 text-blue-500 underline">Edit Profile</button>
     </header>
@@ -52,9 +53,11 @@
     <script>
       // Your JavaScript code can go here
       function wipeUserData() {
-        localStorage.removeItem('username');
-        localStorage.removeItem('bio');
+        localStorage.removeItem('name');
+        localStorage.removeItem('about');
         localStorage.removeItem('keyPair');
+        localStorage.removeItem('seckey');
+        localStorage.removeItem('pubkey');
       }
     </script>
   </body>
