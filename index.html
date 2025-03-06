@@ -51,6 +51,11 @@
     <!-- Placeholder for vanilla JavaScript -->
     <script>
       // Your JavaScript code can go here
+      function wipeUserData() {
+        localStorage.removeItem('username');
+        localStorage.removeItem('bio');
+        localStorage.removeItem('keyPair');
+      }
     </script>
   </body>
 </html>
