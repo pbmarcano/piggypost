@@ -1,8 +1,10 @@
 /**
  * Profile management script for Piggypost.
- * Prompts the user for a username and bio when the page loads,
+ * Prompts the user for a name and about when the page loads,
  * displays them in the header, and provides a way to update them.
  */
+
+import { sendKind0Profile } from "./nostr-events.js";
 
 /**
  * Updates the profile display in the header.
@@ -10,7 +12,7 @@
 function updateProfileDisplay() {
   const profileInfoEl = document.getElementById('profile-info');
   if (profileInfoEl) {
-    profileInfoEl.innerHTML = `<strong>${localStorage.getItem('username')}</strong><br>${localStorage.getItem('bio')}`;
+    profileInfoEl.innerHTML = `<strong>${localStorage.getItem('name')}</strong><br>${localStorage.getItem('about')}`;
   }
 }
 
@@ -18,17 +20,17 @@ function updateProfileDisplay() {
  * Prompts the user to input profile information and updates the display.
  */
 function promptProfile() {
-  const username = prompt("Enter your username:", localStorage.getItem('username') || "") || localStorage.getItem('username') || "newbie";
-  const bio = prompt("Enter your bio:", localStorage.getItem('bio') || "Hello, I'm new here!") || localStorage.getItem('bio') || "Hello, I'm new here!";
+  const name = prompt("Enter your name:", localStorage.getItem('name') || "") || localStorage.getItem('name') || "n00b";
+  const about = prompt("Enter your bio:", localStorage.getItem('about') || "") || localStorage.getItem('about') || "i keep my coins on the exchange";
 
-  localStorage.setItem('username', username);
-  localStorage.setItem('bio', bio);
+  localStorage.setItem('name', name);
+  localStorage.setItem('about', about);
 
   updateProfileDisplay();
 
   // Send the profile info as a kind 0 event
   if (typeof sendKind0Profile === "function") {
-    sendKind0Profile(username, bio);
+    sendKind0Profile(name, about);
   }
 }
 
@@ -36,8 +38,8 @@ function promptProfile() {
 document.addEventListener('DOMContentLoaded', function() {
   // Prompt for initial profile info
 
-  let storedUsername = localStorage.getItem('username');
-  if (!storedUsername) {
+  let storedName = localStorage.getItem('name');
+  if (!storedName) {
     promptProfile();
   }
 
