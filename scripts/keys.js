@@ -3,9 +3,13 @@
  * If not found, generates a placeholder key pair and stores it in localStorage.
  * Returns the key pair as an object { pubKey, privKey }.
  */
-function getNostrKeyPair() {
+
+import { generateSecretKey, getPublicKey } from 'nostr-tools/pure';
+import { bytesToHex } from "@noble/hashes/utils"
+
+function getKeyPair() {
   // Try to get key pair from localStorage or sessionStorage
-  let storedKeyPair = localStorage.getItem('nostrKeyPair');
+  let storedKeyPair = localStorage.getItem('keyPair');
 
   if (storedKeyPair) {
     try {
@@ -16,11 +20,11 @@ function getNostrKeyPair() {
     }
   }
 
-  // If no valid key pair is found, generate a new placeholder key pair
-  const newKeyPair = generatePlaceholderKeyPair();
+  // If no valid key pair is found, generate a new key pair
+  const newKeyPair = generateKeyPair();
 
   // Store the new key pair in localStorage
-  localStorage.setItem('nostrKeyPair', JSON.stringify(newKeyPair));
+  localStorage.setItem('keyPair', JSON.stringify(newKeyPair));
 
   return newKeyPair;
 }
@@ -29,19 +33,15 @@ function getNostrKeyPair() {
  * Generates a placeholder Nostr key pair.
  * Replace this logic with real Nostr key generation when ready.
  */
-function generatePlaceholderKeyPair() {
-  // Simple random string generator for placeholder keys
-  function randomString(length) {
-    return Math.random().toString(36).substr(2, length);
-  }
+function generateKeyPair() {
+  let sk = generateSecretKey();
+  let pk = getPublicKey(sk);
 
   return {
-    pubKey: 'pub_' + randomString(10),
-    privKey: 'priv_' + randomString(10)
+    pubKey: pk,
+    prvKey: bytesToHex(sk)
   };
 }
 
 // Initialize Nostr keys on script load
-const nostrKeyPair = getNostrKeyPair();
-console.log("Nostr Key Pair:", nostrKeyPair);
-
+getKeyPair();

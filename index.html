@@ -4,6 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Piggypost Chat Room</title>
+    <script type="importmap">
+      {
+        "imports": {
+          "nostr-tools/pure": "https://cdn.jsdelivr.net/npm/nostr-tools@2.10.4/+esm",
+          "@noble/hashes/utils": "https://esm.sh/@noble/hashes@1.7.1/utils"
+        }
+      }
+    </script>
     <!-- Tailwind CSS via CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
   </head>
@@ -35,11 +43,11 @@
     </footer>
 
     <!-- Include Nostr Key Management Script -->
-    <script src="scripts/nostr-keys.js"></script>
+    <script type="module" src="scripts/keys.js"></script>
     <!-- Include Nostr Events Script -->
-    <script src="scripts/nostr-events.js"></script>
+    <script type="module" src="scripts/nostr-events.js"></script>
     <!-- Include Profile Script -->
-    <script src="scripts/profile.js"></script>
+    <script type="module" src="scripts/profile.js"></script>
     <!-- Placeholder for vanilla JavaScript -->
     <script>
       // Your JavaScript code can go here
