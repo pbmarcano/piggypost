@@ -63,25 +63,40 @@ function sendKind1Message(messageText) {
 }
 
 function appendMessageToChatFeed(event) {
-  const chatFeed = document.getElementById('chat-feed');
-  if (chatFeed) {
-    // look up the user's profile to get their name
-    const profile = getUserProfile(event.pubkey);
-    const userName = profile && profile.name ? profile.name : event.pubkey.substring(0, 10) + '...';
+    const chatFeed = document.getElementById('chat-feed');
+    if (chatFeed) {
+          // Look up the user's profile to get their name
+      const profile = getUserProfile(event.pubkey);
+      const userName = profile && profile.name ? profile.name : null;
 
-    const message = document.createElement('div');
-    message.innerHTML = `<span class="text-sm text-gray-600">${userName}: ${event.content}</span>`;
-    message.className = "mb-2 p-2 bg-gray-100 rounded";
-    chatFeed.appendChild(message);
-    // Scroll to the bottom of the chat feed for new messages
-    chatFeed.scrollTop = chatFeed.scrollHeight;
-  }
+      // Check if the message is for the current user (for encrypted messages)
+      // For now, all messages are public (kind 1), so this is false
+      const isForCurrentUser = false;
+
+      // Check if the message is encrypted (kind 4)
+      const isEncrypted = event.kind === 4;
+
+      // Create a message component
+      const message = document.createElement('piggy-message');
+      message.pubkey = event.pubkey;
+      message.content = event.content;
+      message.timestamp = event.created_at;
+      message.userName = userName;
+      message.isEncrypted = isEncrypted;
+      message.isForCurrentUser = isForCurrentUser;
+
+      // Add the message to the chat feed
+      chatFeed.appendChild(message);
+
+      // Scroll to the bottom of the chat feed for new messages
+      chatFeed.scrollTop = chatFeed.scrollHeight;
+    }
 }
 
 /**
-  *  * Processes a kind 0 event to store user profile information.
-  *   * @param {Object} event - The kind 0 event.
-  *    */
+ * Processes a kind 0 event to store user profile information.
+ * @param {Object} event - The kind 0 event.
+ */
 function processKind0Event(event) {
   try {
     const profile = JSON.parse(event.content);
@@ -92,9 +107,14 @@ function processKind0Event(event) {
       // Announce user entered the chat
       const chatFeed = document.getElementById('chat-feed');
       if (chatFeed && profile.name) {
-        const systemMessage = document.createElement('div');
-        systemMessage.innerHTML = `<em>${profile.name} has entered the chat</em>`;
-        systemMessage.className = "mb-2 p-2 text-center text-gray-500";
+        // For system messages, we'll use the same message component but with special styling
+        const systemMessage = document.createElement('piggy-message');
+        systemMessage.content = `<em>${profile.name} has entered the chat</em>`;
+        systemMessage.timestamp = event.created_at;
+
+        // Add a class to style it as a system message
+        systemMessage.classList.add('system-message');
+
         chatFeed.appendChild(systemMessage);
         chatFeed.scrollTop = chatFeed.scrollHeight;
       }
