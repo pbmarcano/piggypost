@@ -101,22 +101,37 @@ function processKind0Event(event) {
   try {
     const profile = JSON.parse(event.content);
     if (profile) {
+      // Check if user already had a profile
+      const existingProfile = getUserProfile(event.pubkey);
+
+      // Store the updated profile
       storeUserProfile(event.pubkey, profile);
       console.log(`Stored profile for ${profile.name || 'unknown user'}`);
 
-      // Announce user entered the chat
+      // Get the chat feed element
       const chatFeed = document.getElementById('chat-feed');
       if (chatFeed && profile.name) {
-        // For system messages, we'll use the same message component but with special styling
-        const systemMessage = document.createElement('piggy-message');
-        systemMessage.content = `<em>${profile.name} has entered the chat</em>`;
-        systemMessage.timestamp = event.created_at;
+        let systemMessage;
 
-        // Add a class to style it as a system message
-        systemMessage.classList.add('system-message');
+        // If it's a new user joining (no previous profile)
+        if (!existingProfile || !existingProfile.name) {
+          // Create a user joined message
+          systemMessage = document.createElement('piggy-system-message');
+          systemMessage.content = `${profile.name} has entered the chat`;
+        } 
+        // If user changed their name
+        else if (existingProfile.name !== profile.name) {
+          // Create a username changed message
+          systemMessage = document.createElement('piggy-system-message');
+          systemMessage.content = `${existingProfile.name} changed their name to ${profile.name}`;
+        }
 
-        chatFeed.appendChild(systemMessage);
-        chatFeed.scrollTop = chatFeed.scrollHeight;
+        // If we created a system message, add it to the feed
+        if (systemMessage) {
+          systemMessage.timestamp = event.created_at;
+          chatFeed.appendChild(systemMessage);
+          chatFeed.scrollTop = chatFeed.scrollHeight;
+        }
       }
     }
   } catch (error) {

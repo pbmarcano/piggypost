@@ -5,7 +5,7 @@
 
 import './profile-component.js';
 import './message-component.js';
-// import './system-message-component.js';
+import './system-message-component.js';
 // import './chat-feed-component.js';
 import './message-input-component.js';
 
