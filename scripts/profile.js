@@ -34,6 +34,32 @@ function promptProfile() {
   }
 }
 
+/**
+ * Stores a user's profile information in localStorage.
+ * @param {string} pubkey - The user's public key.
+ * @param {Object} profile - The user's profile information.
+ */
+export function storeUserProfile(pubkey, profile) {
+  // get existing user profiles
+  const profiles = JSON.parse(localStorage.getItem('userProfiles') || '{}');
+
+  // add or update a user's profile
+  profiles[pubkey] = profile;
+
+  // save back to localStorage
+  localStorage.setItem('userProfiles', JSON.stringify(profiles));
+}
+
+/**
+ * Gets a user's profile information from localStorage.
+ * @param {string} pubkey - The user's public key.
+ * @returns {Object|null} - The user's profile or null if not found.
+ */
+export function getUserProfile(pubkey) {
+  const profiles = JSON.parse(localStorage.getItem('userProfiles') || '{}');
+  return profiles[pubkey] || null;
+}
+
 // Initialize profile when the DOM is fully loaded
 document.addEventListener('DOMContentLoaded', function() {
   // Prompt for initial profile info

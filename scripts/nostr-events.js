@@ -1,12 +1,13 @@
 /**
  * Nostr Events management script for Piggypost.
- * This script includes functions to send and listen for kind 0 events,
- * which are used to store user profile information.
+ * This script includes functions to send and listen for kind 0, 1, and 4 events,
+ * which are used to store user profile information and send messages.
  */
 
 import { finalizeEvent, verifyEvent } from 'nostr-tools/pure';
 import { hexToBytes } from '@noble/hashes/utils';
 import { Relay } from 'nostr-tools/relay';
+import { getUserProfile, storeUserProfile } from './profile.js';
 
 let relay;
 
@@ -16,8 +17,7 @@ async function connectToRelays() {
 }
 
 /**
- * Stub function to simulate sending a Nostr event.
- * Replace this with real relay interaction using nostr-tools.
+ * Sends a Nostr event to the relay.
  * @param {Object} eventData - The event data to send.
  */
 async function sendNostrEvent(eventData) {
@@ -65,12 +65,42 @@ function sendKind1Message(messageText) {
 function appendMessageToChatFeed(event) {
   const chatFeed = document.getElementById('chat-feed');
   if (chatFeed) {
+    // look up the user's profile to get their name
+    const profile = getUserProfile(event.pubkey);
+    const userName = profile && profile.name ? profile.name : event.pubkey.substring(0, 10) + '...';
+
     const message = document.createElement('div');
-    message.innerHTML = `<span class="text-sm text-gray-600">${event.pubkey}: ${event.content}</span>`;
+    message.innerHTML = `<span class="text-sm text-gray-600">${userName}: ${event.content}</span>`;
     message.className = "mb-2 p-2 bg-gray-100 rounded";
     chatFeed.appendChild(message);
     // Scroll to the bottom of the chat feed for new messages
     chatFeed.scrollTop = chatFeed.scrollHeight;
+  }
+}
+
+/**
+  *  * Processes a kind 0 event to store user profile information.
+  *   * @param {Object} event - The kind 0 event.
+  *    */
+function processKind0Event(event) {
+  try {
+    const profile = JSON.parse(event.content);
+    if (profile) {
+      storeUserProfile(event.pubkey, profile);
+      console.log(`Stored profile for ${profile.name || 'unknown user'}`);
+
+      // Announce user entered the chat
+      const chatFeed = document.getElementById('chat-feed');
+      if (chatFeed && profile.name) {
+        const systemMessage = document.createElement('div');
+        systemMessage.innerHTML = `<em>${profile.name} has entered the chat</em>`;
+        systemMessage.className = "mb-2 p-2 text-center text-gray-500";
+        chatFeed.appendChild(systemMessage);
+        chatFeed.scrollTop = chatFeed.scrollHeight;
+      }
+    }
+  } catch (error) {
+    console.error("Error processing kind 0 event:", error);
   }
 }
 
@@ -90,8 +120,12 @@ function listenForKind0Events() {
   ], {
     onevent(event) {
       switch (event.kind) {
+        case 0:
+          processKind0Event(event);
+          break;
         case 1:
           appendMessageToChatFeed(event);
+          break;
         default:
           console.log("Recieved Event:", event);
       }
