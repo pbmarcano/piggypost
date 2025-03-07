@@ -1,38 +1,9 @@
 /**
  * Profile management script for Piggypost.
- * Prompts the user for a name and about when the page loads,
- * displays them in the header, and provides a way to update them.
+ * Handles profile data storage and retrieval.
  */
 
 import { sendKind0Profile } from "./nostr-events.js";
-
-/**
- * Updates the profile display in the header.
- */
-function updateProfileDisplay() {
-  const profileInfoEl = document.getElementById('profile-info');
-  if (profileInfoEl) {
-    profileInfoEl.innerHTML = `<strong>${localStorage.getItem('name')}</strong><br>${localStorage.getItem('about')}`;
-  }
-}
-
-/**
- * Prompts the user to input profile information and updates the display.
- */
-function promptProfile() {
-  const name = prompt("Enter your name:", localStorage.getItem('name') || "") || localStorage.getItem('name') || "n00b";
-  const about = prompt("Enter your bio:", localStorage.getItem('about') || "") || localStorage.getItem('about') || "i keep my coins on the exchange";
-
-  localStorage.setItem('name', name);
-  localStorage.setItem('about', about);
-
-  updateProfileDisplay();
-
-  // Send the profile info as a kind 0 event
-  if (typeof sendKind0Profile === "function") {
-    sendKind0Profile(name, about);
-  }
-}
 
 /**
  * Stores a user's profile information in localStorage.
@@ -62,20 +33,23 @@ export function getUserProfile(pubkey) {
 
 // Initialize profile when the DOM is fully loaded
 document.addEventListener('DOMContentLoaded', function() {
-  // Prompt for initial profile info
+  // Check if the user already has a profile
+  const hasProfile = localStorage.getItem('name');
 
-  let storedName = localStorage.getItem('name');
-  if (!storedName) {
-    promptProfile();
-  }
+  // Setup the profile component
+  const profileComponent = document.querySelector('piggy-profile');
+  if (profileComponent) {
+    // Listen for profile changes
+    profileComponent.addEventListener('profile-changed', (event) => {
+      const { name, about } = event.detail;
+      if (typeof sendKind0Profile === "function") {
+        sendKind0Profile(name, about);
+      }
+    });
 
-  updateProfileDisplay();
-
-
-  // Set up the event listener for changing profile info
-  const editButton = document.getElementById('edit-profile');
-  if (editButton) {
-    editButton.addEventListener('click', promptProfile);
+    // If no profile exists, prompt for one
+    if (!hasProfile) {
+      profileComponent.promptProfile();
+    }
   }
 });
-
