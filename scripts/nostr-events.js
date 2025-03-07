@@ -108,7 +108,7 @@ function processKind0Event(event) {
  * Listens for incoming kind 0 events.
  * In a real implementation, this would subscribe to a relay for kind 0 events.
  */
-function listenForKind0Events() {
+function listenForEvents() {
   // console.log("Listening for kind 0 events...");
   // Placeholder: Connect to a relay and subscribe to kind 0 events.
   relay.subscribe([
@@ -137,20 +137,14 @@ function listenForKind0Events() {
 document.addEventListener("DOMContentLoaded", function() {
   // setup relays
   connectToRelays().then(() => {
-    listenForKind0Events();
+    listenForEvents();
   }).catch(error => {
     console.error("Error connecting to relay:", error);
   });
 
   // manage user input
-  const sendButton = document.getElementById('send-button');
-  const messageInput = document.getElementById('message-input');
-
-  sendButton.addEventListener('click', () => {
-    const messageText  = messageInput.value.trim();
-    if (messageText !== "") {
-      sendKind1Message(messageText);
-      messageInput.value = "";
-    }
+  document.addEventListener('message-send', (event) => {
+    const { messageText } = event.detail;
+    sendKind1Message(messageText);
   });
 });
