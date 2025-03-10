@@ -13,6 +13,9 @@ export class ChatFeedComponent extends HTMLElement {
   connectedCallback() {
     this.render();
     this.setupEventListeners();
+
+    // Force initial scroll to bottom
+    setTimeout(() => this.scrollToBottom(), 100);
   }
 
   // Called when element is removed from the DOM
@@ -21,9 +24,16 @@ export class ChatFeedComponent extends HTMLElement {
   }
 
   render() {
+    // Set the component to take full height
+    this.style.display = 'flex';
+    this.style.flexDirection = 'column';
+    this.style.flex = '1';
+    this.style.minHeight = '0'; // Important for Firefox
+    this.style.height = '100%';
+
     // Create the basic structure
     this.innerHTML = `
-      <div class="flex-1 p-4 overflow-y-scroll flex flex-col min-h-0" id="messages-container">
+      <div class="h-full w-full p-4 overflow-y-auto flex flex-col" id="messages-container">
         <!-- Messages will be displayed here -->
       </div>
     `;
@@ -65,9 +75,15 @@ export class ChatFeedComponent extends HTMLElement {
       // Add the message to the DOM
       container.appendChild(messageElement);
 
-      // Auto-scroll if enabled
-      if (this._autoScroll) {
-        this.scrollToBottom();
+      // Calculate if we should auto-scroll
+      // Default to true for first few messages to ensure visibility
+      const messageCount = container.children.length;
+      const shouldScroll = this._autoScroll || messageCount < 10;
+
+      // Auto-scroll if enabled or we have very few messages
+      if (shouldScroll) {
+        // Slight delay to ensure DOM update
+        setTimeout(() => this.scrollToBottom(), 10);
       }
     }
   }
@@ -105,7 +121,16 @@ export class ChatFeedComponent extends HTMLElement {
   scrollToBottom() {
     const container = this.querySelector('#messages-container');
     if (container) {
-      container.scrollTop = container.scrollHeight;
+      // Log heights for debugging
+      console.log('Container clientHeight:', container.clientHeight);
+      console.log('Container scrollHeight:', container.scrollHeight);
+
+      // Use setTimeout to ensure the DOM has updated
+      setTimeout(() => {
+        container.scrollTop = container.scrollHeight;
+        console.log('Set scrollTop to:', container.scrollHeight);
+        console.log('Current scrollTop:', container.scrollTop);
+      }, 0);
     }
   }
 
