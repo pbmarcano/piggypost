@@ -64,28 +64,32 @@ export class PiggyMessageInput extends HTMLElement {
 
     // Create encryption status bar if needed
     const encryptionBar = isEncrypted ? `
-      <div class="bg-pink-100 p-2 mb-2 rounded flex justify-between items-center">
-        <span>🔒 Encrypted message to <strong>${recipientName}</strong></span>
-        <button id="cancel-encryption" class="text-red-500 text-sm">
+      <div class="bg-pink-50 p-3 mb-3 rounded-lg shadow-sm border border-pink-100 flex justify-between items-center">
+        <span class="text-pink-600 flex items-center">
+          <span class="mr-1">🐽</span> 
+          Encrypted message to <strong class="mx-1">${recipientName}</strong>
+        </span>
+        <button id="cancel-encryption" class="px-3 py-1 bg-white text-red-500 rounded-md text-sm font-medium hover:bg-red-50 transition-colors duration-150 shadow-sm">
           Cancel
         </button>
       </div>
     ` : '';
 
-    // Choose button color based on mode
-    const buttonColor = isEncrypted ? 'bg-pink-500' : 'bg-blue-500';
+    // Choose button color and icon based on mode
+    const buttonColor = isEncrypted ? 'bg-pink-600 hover:bg-pink-700' : 'bg-pink-500 hover:bg-pink-600';
+    const buttonIcon = isEncrypted ? '🐽' : '🐷';
 
     this.innerHTML = `
       ${encryptionBar}
-      <div class="flex">
+      <div class="flex shadow-sm">
         <input
             id="message-input"
             type="text"
             placeholder="${isEncrypted ? `Message to ${recipientName}...` : 'Type your message...'}"
-            class="flex-grow border rounded-l p-2"
+            class="flex-grow border border-gray-200 focus:ring-2 focus:ring-pink-200 focus:border-pink-300 rounded-l-lg p-3 outline-none"
             />
-        <button id="send-button" class="${buttonColor} text-white px-4 rounded-r">
-          Send
+        <button id="send-button" class="${buttonColor} text-white px-5 rounded-r-lg flex items-center transition-colors duration-200">
+          <span class="mr-1">${buttonIcon}</span> Send
         </button>
       </div>
     `;

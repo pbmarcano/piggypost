@@ -3,7 +3,8 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Piggypost / Chat Room</title>
+    <title>PiggyPost / Chat Room</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐷</text></svg>">
     <script type="importmap">
       {
         "imports": {
@@ -19,20 +20,24 @@
     <!-- Import Web Components -->
     <script type="module" src="components/index.js"></script>
   </head>
-  <body class="min-h-screen flex flex-col h-screen overflow-hidden">
+  <body class="min-h-screen flex flex-col h-screen overflow-hidden bg-gray-50">
     <!-- Header Section for User Profile -->
-    <header class="sticky top-0">
+    <header class="sticky top-0 z-10">
       <piggy-profile></piggy-profile>
     </header>
 
     <!-- Main Chat Feed Container -->
-    <main class="flex-1 overflow-hidden flex flex-col min-h-0">
-      <piggy-chat-feed></piggy-chat-feed>
+    <main class="flex-1 overflow-hidden flex flex-col min-h-0 px-3 md:px-6 py-3">
+      <div class="bg-white rounded-lg shadow-sm h-full overflow-hidden border border-gray-100">
+        <piggy-chat-feed></piggy-chat-feed>
+      </div>
     </main>
 
     <!-- Footer for Message Input -->
-    <footer class="p-4 bg-gray-300 sticky bottom-0">
-      <piggy-message-input></piggy-message-input>
+    <footer class="p-4 bg-white sticky bottom-0 border-t border-gray-100 shadow-sm">
+      <div class="max-w-3xl mx-auto">
+        <piggy-message-input></piggy-message-input>
+      </div>
     </footer>
 
     <!-- Include Nostr Key Management Script -->

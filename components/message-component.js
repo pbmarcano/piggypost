@@ -162,10 +162,17 @@ export class MessageComponent extends HTMLElement {
   // Render the message
   render() {
     // Determine message background color based on encryption status
-    let bgColorClass = 'bg-gray-100'; // Default for public messages
+    let bgColorClass = 'bg-white border border-gray-100'; // Default for public messages
+    let encryptionClass = '';
 
     if (this._isEncrypted) {
-      bgColorClass = this._isForCurrentUser ? 'bg-pink-100' : 'bg-gray-200'; // Pink for recipient, light gray for others
+      if (this._isForCurrentUser) {
+        bgColorClass = 'bg-pink-50 border border-pink-100'; // Pink for recipient
+        encryptionClass = 'text-pink-600';
+      } else {
+        bgColorClass = 'bg-gray-50 border border-gray-100'; // Light gray for others
+        encryptionClass = 'text-gray-600';
+      }
     }
 
     // Create timestamp string
@@ -175,14 +182,19 @@ export class MessageComponent extends HTMLElement {
     const displayName = this._userName || (this._pubkey ? `${this._pubkey.substring(0, 10)}...` : 'King Piggy');
 
     this.innerHTML = `
-      <div class="mb-2 p-2 ${bgColorClass} rounded">
+      <div class="mb-3 p-3 ${bgColorClass} rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200">
         <div class="flex justify-between items-start">
-          <span class="font-medium message-username">${displayName}</span>
-          <span class="text-xs text-gray-500 message-timestamp">${timeString}</span>
+          <span class="font-medium text-gray-900 hover:text-pink-600 transition-colors duration-150 message-username">${displayName}</span>
+          <span class="text-xs text-gray-400 message-timestamp">${timeString}</span>
         </div>
-        <p class="mt-1">${this._content}</p>
-        ${this._isEncrypted ? '<div class="text-xs text-gray-500 mt-1">🔒 encrypted</div>' : ''}
-      </div>
+        <p class="mt-2 text-gray-800">${this._content}</p>
+        ${this._isEncrypted ? 
+          `<div class="text-xs ${encryptionClass} mt-2 flex items-center">
+            <span class="mr-1">${this._isForCurrentUser ? '🥓' : '🐽'}</span>
+            <span>encrypted message</span>
+          </div>` 
+        : ''}
+        </div>
     `;
 
     // Attach click handlers after rendering

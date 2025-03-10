@@ -33,8 +33,15 @@ export class ChatFeedComponent extends HTMLElement {
 
     // Create the basic structure
     this.innerHTML = `
-      <div class="h-full w-full p-4 overflow-y-auto flex flex-col" id="messages-container">
+      <div class="h-full w-full p-4 overflow-y-auto flex flex-col space-y-1" id="messages-container">
         <!-- Messages will be displayed here -->
+        <div class="text-center p-4">
+          <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-pink-100 mb-3">
+            <span class="text-3xl">🐷</span>
+          </div>
+          <h3 class="text-lg font-medium text-gray-900">Welcome to PiggyPost</h3>
+          <p class="text-sm text-gray-500 mt-1">A secure, pig-themed crypto chat room</p>
+        </div>
       </div>
     `;
   }

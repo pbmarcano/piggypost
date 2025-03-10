@@ -40,12 +40,17 @@ export class PiggyProfile extends HTMLElement {
     const about = localStorage.getItem('about') || 'i keep my coins on the exchange';
 
     this.innerHTML = `
-      <div class="p-4 bg-gray-200 sticky top-0">
-        <div id="profile-info">
-          <strong class="text-lg">${name}</strong>
-          <p class="text-sm text-gray-600">${about}</p>
+      <div class="p-4 bg-white shadow-sm sticky top-0 border-b border-gray-100">
+        <div id="profile-info" class="flex items-center">
+          <div class="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center text-xl mr-3">
+            🐷
+          </div>
+          <div class="flex-1">
+            <strong class="text-lg font-medium text-gray-900">${name}</strong>
+            <p class="text-sm text-gray-500">${about}</p>
+          </div>
         </div>
-        <button id="edit-profile" class="mt-2 text-blue-500 underline">Edit Profile</button>
+        <button id="edit-profile" class="mt-3 px-3 py-1.5 bg-pink-50 hover:bg-pink-100 text-pink-600 rounded-md text-sm font-medium transition-colors duration-150">Edit Profile</button>
       </div>
     `;
   }
