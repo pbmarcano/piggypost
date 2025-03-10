@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Piggypost Chat Room</title>
+    <title>Piggypost / Chat Room</title>
     <script type="importmap">
       {
         "imports": {
@@ -25,8 +25,8 @@
     </header>
 
     <!-- Main Chat Feed Container -->
-    <main id="chat-feed" class="flex-1 p-4 overflow-y-scroll flex flex-col min-h-0">
-      <!-- Chat messages will appear here -->
+    <main class="flex-1 overflow-hidden flex flex-col min-h-0">
+      <piggy-chat-feed></piggy-chat-feed>
     </main>
 
     <!-- Footer for Message Input -->

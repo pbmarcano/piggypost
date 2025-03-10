@@ -5,10 +5,13 @@
  */
 
 import { finalizeEvent, verifyEvent } from 'nostr-tools/pure';
-import { hexToBytes } from '@noble/hashes/utils';
 import { Relay } from 'nostr-tools/relay';
 import { getUserProfile, storeUserProfile } from './profile.js';
 
+// Reference to the chat feed component
+let chatFeed;
+
+// Initialize relay connection
 let relay;
 
 async function connectToRelays() {
@@ -62,35 +65,26 @@ function sendKind1Message(messageText) {
   sendNostrEvent(event);
 }
 
-function appendMessageToChatFeed(event) {
-    const chatFeed = document.getElementById('chat-feed');
-    if (chatFeed) {
-          // Look up the user's profile to get their name
-      const profile = getUserProfile(event.pubkey);
-      const userName = profile && profile.name ? profile.name : null;
+/**
+ * Processes a user message event and adds it to the chat feed.
+ * @param {Object} event - The message event.
+ */
+function processMessageEvent(event) {
+  if (!chatFeed) return;
 
-      // Check if the message is for the current user (for encrypted messages)
-      // For now, all messages are public (kind 1), so this is false
-      const isForCurrentUser = false;
+  // Look up the user's profile to get their name
+  const profile = getUserProfile(event.pubkey);
+  const userName = profile && profile.name ? profile.name : null;
 
-      // Check if the message is encrypted (kind 4)
-      const isEncrypted = event.kind === 4;
+  // Check if the message is for the current user (for encrypted messages)
+  // For now, all messages are public (kind 1), so this is false
+  const isForCurrentUser = false;
 
-      // Create a message component
-      const message = document.createElement('piggy-message');
-      message.pubkey = event.pubkey;
-      message.content = event.content;
-      message.timestamp = event.created_at;
-      message.userName = userName;
-      message.isEncrypted = isEncrypted;
-      message.isForCurrentUser = isForCurrentUser;
+  // Check if the message is encrypted (kind 4)
+  const isEncrypted = event.kind === 4;
 
-      // Add the message to the chat feed
-      chatFeed.appendChild(message);
-
-      // Scroll to the bottom of the chat feed for new messages
-      chatFeed.scrollTop = chatFeed.scrollHeight;
-    }
+  // Add the message to the chat feed
+  chatFeed.addUserMessage(event, userName, isEncrypted, isForCurrentUser);
 }
 
 /**
@@ -100,37 +94,27 @@ function appendMessageToChatFeed(event) {
 function processKind0Event(event) {
   try {
     const profile = JSON.parse(event.content);
-    if (profile) {
+    if (profile && profile.name) {
       // Check if user already had a profile
       const existingProfile = getUserProfile(event.pubkey);
 
       // Store the updated profile
       storeUserProfile(event.pubkey, profile);
-      console.log(`Stored profile for ${profile.name || 'unknown user'}`);
+      console.log(`Stored profile for ${profile.name}`);
 
-      // Get the chat feed element
-      const chatFeed = document.getElementById('chat-feed');
-      if (chatFeed && profile.name) {
-        let systemMessage;
-
+      // If we have a chat feed component
+      if (chatFeed) {
         // If it's a new user joining (no previous profile)
         if (!existingProfile || !existingProfile.name) {
-          // Create a user joined message
-          systemMessage = document.createElement('piggy-system-message');
-          systemMessage.content = `${profile.name} has entered the chat`;
+          chatFeed.announceUserJoined(profile.name, event.created_at);
         } 
         // If user changed their name
         else if (existingProfile.name !== profile.name) {
-          // Create a username changed message
-          systemMessage = document.createElement('piggy-system-message');
-          systemMessage.content = `${existingProfile.name} changed their name to ${profile.name}`;
-        }
-
-        // If we created a system message, add it to the feed
-        if (systemMessage) {
-          systemMessage.timestamp = event.created_at;
-          chatFeed.appendChild(systemMessage);
-          chatFeed.scrollTop = chatFeed.scrollHeight;
+          chatFeed.announceUsernameChanged(
+            existingProfile.name, 
+            profile.name, 
+            event.created_at
+          );
         }
       }
     }
@@ -140,17 +124,15 @@ function processKind0Event(event) {
 }
 
 /**
- * Listens for incoming kind 0 events.
- * In a real implementation, this would subscribe to a relay for kind 0 events.
+ * Listens for incoming Nostr events.
  */
 function listenForEvents() {
-  // console.log("Listening for kind 0 events...");
-  // Placeholder: Connect to a relay and subscribe to kind 0 events.
   relay.subscribe([
     { 
       'kinds': [0, 1, 4],
       'since': Math.floor(Date.now() / 1000) - 900, // 15 minutes ago
-      '#t': ["piggypost"]
+      'limit': 50
+      // '#t': ["piggypost"]
     },
   ], {
     onevent(event) {
@@ -159,25 +141,31 @@ function listenForEvents() {
           processKind0Event(event);
           break;
         case 1:
-          appendMessageToChatFeed(event);
+          processMessageEvent(event);
+          break;
+        case 4:
+          processMessageEvent(event);
           break;
         default:
-          console.log("Recieved Event:", event);
+          console.log("Received Unhandled Event:", event);
       }
     }
   })
 }
 
-// Automatically start listening for kind 0 events when the script loads.
+// Initialize when the DOM is fully loaded
 document.addEventListener("DOMContentLoaded", function() {
-  // setup relays
+  // Get a reference to the chat feed component
+  chatFeed = document.querySelector('piggy-chat-feed');
+
+  // Setup relays
   connectToRelays().then(() => {
     listenForEvents();
   }).catch(error => {
     console.error("Error connecting to relay:", error);
   });
 
-  // manage user input
+  // Listen for message-send events
   document.addEventListener('message-send', (event) => {
     const { messageText } = event.detail;
     sendKind1Message(messageText);
