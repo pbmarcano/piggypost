@@ -5,6 +5,7 @@
  */
 
 import { finalizeEvent, verifyEvent } from 'nostr-tools/pure';
+import * as nip04 from 'nostr-tools/nip04';
 import { Relay } from 'nostr-tools/relay';
 import { getUserProfile, storeUserProfile } from './profile.js';
 
@@ -13,6 +14,9 @@ let chatFeed;
 
 // Initialize relay connection
 let relay;
+
+// Current active recipient for encrypted messages (null when in public mode)
+let currentRecipient = null;
 
 async function connectToRelays() {
   relay = await Relay.connect('wss://relay.primal.net');
@@ -66,25 +70,87 @@ function sendKind1Message(messageText) {
 }
 
 /**
+ * Sends a kind 4 encrypted message to a specific recipient.
+ * @param {string} messageText - The message to encrypt and send.
+ * @param {string} recipientPubKey - The recipient's public key.
+ */
+async function sendKind4EncryptedMessage(messageText, recipientPubKey) {
+  const sk = localStorage.getItem('seckey');
+
+  try {
+    // Encrypt the message using NIP-04
+    const encryptedContent = await nip04.nip04.encrypt(sk, recipientPubKey, messageText);
+
+    // Create the event with proper tags
+    const event = finalizeEvent({
+      kind: 4,
+      content: encryptedContent,
+      created_at: Math.floor(Date.now() / 1000),
+      tags: [
+        ["p", recipientPubKey], // Tag the recipient
+        ["t", "piggypost"]      // Tag for our app
+      ]
+    }, sk);
+
+    // Send the encrypted event
+    sendNostrEvent(event);
+
+    // Play pig snort sound for sending encrypted message
+    playSound('snort');
+
+  } catch (error) {
+    console.error("Error encrypting message:", error);
+  }
+}
+
+/**
  * Processes a user message event and adds it to the chat feed.
  * @param {Object} event - The message event.
  */
-function processMessageEvent(event) {
+async function processMessageEvent(event) {
   if (!chatFeed) return;
 
   // Look up the user's profile to get their name
   const profile = getUserProfile(event.pubkey);
   const userName = profile && profile.name ? profile.name : null;
 
-  // Check if the message is for the current user (for encrypted messages)
-  // For now, all messages are public (kind 1), so this is false
-  const isForCurrentUser = false;
-
   // Check if the message is encrypted (kind 4)
   const isEncrypted = event.kind === 4;
+  let isForCurrentUser = false;
+  let messageContent = event.content;
 
-  // Add the message to the chat feed
-  chatFeed.addUserMessage(event, userName, isEncrypted, isForCurrentUser);
+  // Handle encrypted message (kind 4)
+  if (isEncrypted) {
+    // Check if this message was sent to the current user by looking for our pubkey in p tags
+    const myPubKey = localStorage.getItem('pubkey');
+    const pTags = event.tags.filter(tag => tag[0] === 'p');
+
+    // This message is for us if our pubkey is in the p tags
+    isForCurrentUser = pTags.some(tag => tag[1] === myPubKey);
+
+    // If this message is for us, try to decrypt it
+    if (isForCurrentUser) {
+      try {
+        const sk = localStorage.getItem('seckey');
+        messageContent = await nip04.nip04.decrypt(sk, event.pubkey, event.content);
+
+        // Play pig squeal sound for receiving decrypted message
+        playSound('squeal');
+      } catch (error) {
+        console.error("Failed to decrypt message:", error);
+        // If decryption fails, keep the ciphertext
+        isForCurrentUser = false;
+      }
+    }
+  }
+
+  // Add the message to the chat feed with appropriate content
+  chatFeed.addUserMessage(
+    { ...event, content: messageContent },
+    userName, 
+    isEncrypted, 
+    isForCurrentUser
+  );
 }
 
 /**
@@ -120,6 +186,43 @@ function processKind0Event(event) {
     }
   } catch (error) {
     console.error("Error processing kind 0 event:", error);
+  }
+}
+
+/**
+ * Plays a pig sound effect.
+ * @param {string} type - Type of sound ('snort' or 'squeal').
+ */
+function playSound(type) {
+  const sound = new Audio(`sounds/${type}.mp3`);
+  sound.play().catch(err => console.error("Error playing sound:", err));
+}
+
+/**
+ * Sets the current recipient for encrypted messages.
+ * @param {Object|null} recipient - Recipient object with pubkey and name, or null for public mode.
+ */
+export function setCurrentRecipient(recipient) {
+  currentRecipient = recipient;
+
+  // Update the UI to show the current message mode
+  const messageInput = document.querySelector('piggy-message-input');
+  if (messageInput) {
+    messageInput.setEncryptionMode(recipient);
+  }
+}
+
+/**
+ * Handles sending a message based on current mode (public or encrypted).
+ * @param {string} messageText - The message to send.
+ */
+export function sendMessage(messageText) {
+  if (currentRecipient) {
+    // Send as encrypted message to the current recipient
+    sendKind4EncryptedMessage(messageText, currentRecipient.pubkey);
+  } else {
+    // Send as public message
+    sendKind1Message(messageText);
   }
 }
 
@@ -168,6 +271,12 @@ document.addEventListener("DOMContentLoaded", function() {
   // Listen for message-send events
   document.addEventListener('message-send', (event) => {
     const { messageText } = event.detail;
-    sendKind1Message(messageText);
+    sendMessage(messageText);
+  });
+
+  // Listen for username-click events
+  document.addEventListener('username-click', (event) => {
+    const { pubkey, name } = event.detail;
+    setCurrentRecipient({ pubkey, name });
   });
 });

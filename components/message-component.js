@@ -17,6 +17,7 @@ export class MessageComponent extends HTMLElement {
   // Web component lifecycle method - called when element is added to DOM
   connectedCallback() {
     this.render();
+    this.attachUsernameClickHandler();
     // Start a timer to update the timestamp every minute
     this.startTimestampRefresh();
   }
@@ -50,6 +51,24 @@ export class MessageComponent extends HTMLElement {
     const timestampElement = this.querySelector('.message-timestamp');
     if (timestampElement) {
       timestampElement.textContent = this.formatRelativeTime(this._timestamp);
+    }
+  }
+
+  // Attach click handler to username
+  attachUsernameClickHandler() {
+    const usernameElement = this.querySelector('.message-username');
+    if (usernameElement && this._pubkey) {
+      usernameElement.style.cursor = 'pointer';
+      usernameElement.addEventListener('click', () => {
+        // Dispatch event when username is clicked
+        this.dispatchEvent(new CustomEvent('username-click', {
+          detail: { 
+            pubkey: this._pubkey,
+            name: this._userName
+          },
+          bubbles: true
+        }));
+      });
     }
   }
 
@@ -158,12 +177,16 @@ export class MessageComponent extends HTMLElement {
     this.innerHTML = `
       <div class="mb-2 p-2 ${bgColorClass} rounded">
         <div class="flex justify-between items-start">
-          <span class="font-medium">${displayName}</span>
+          <span class="font-medium message-username">${displayName}</span>
           <span class="text-xs text-gray-500 message-timestamp">${timeString}</span>
         </div>
         <p class="mt-1">${this._content}</p>
+        ${this._isEncrypted ? '<div class="text-xs text-gray-500 mt-1">🔒 encrypted</div>' : ''}
       </div>
     `;
+
+    // Attach click handlers after rendering
+    this.attachUsernameClickHandler();
   }
 
   // Static method to create a message from a Nostr event
