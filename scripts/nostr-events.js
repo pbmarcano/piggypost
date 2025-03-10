@@ -131,8 +131,8 @@ function listenForEvents() {
     { 
       'kinds': [0, 1, 4],
       'since': Math.floor(Date.now() / 1000) - 900, // 15 minutes ago
-      'limit': 50
-      // '#t': ["piggypost"]
+      // 'limit': 50,
+      '#t': ["piggypost"]
     },
   ], {
     onevent(event) {
