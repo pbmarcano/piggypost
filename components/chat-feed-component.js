@@ -31,10 +31,11 @@ export class ChatFeedComponent extends HTMLElement {
     this.style.minHeight = '0'; // Important for Firefox
     this.style.height = '100%';
     this.style.position = 'relative'; // Add position context
+    this.style.overflow = 'hidden'; // Prevent any overflow in the component itself
 
     // Create the basic structure
     this.innerHTML = `
-      <div class="h-full w-full p-4 overflow-y-auto flex flex-col space-y-1" id="messages-container" style="-webkit-overflow-scrolling: touch; overflow-y: scroll; position: absolute; top: 0; left: 0; right: 0; bottom: 0;">
+      <div class="h-full w-full p-4 flex flex-col space-y-1" id="messages-container" style="-webkit-overflow-scrolling: touch; overflow-y: scroll; overflow-x: hidden; position: absolute; top: 0; left: 0; right: 0; bottom: 0; width: 100%; max-width: 100%;">
         <!-- Messages will be displayed here -->
         <div class="text-center p-4">
           <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-pink-100 mb-3">

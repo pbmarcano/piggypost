@@ -233,7 +233,7 @@ function listenForEvents() {
   relay.subscribe([
     { 
       'kinds': [0, 1, 4],
-      'since': Math.floor(Date.now() / 1000) - 900, // 15 minutes ago
+      'since': Math.floor(Date.now() / 1000) - 1800, // 30 minutes ago
       // 'limit': 50,
       '#t': ["piggypost"]
     },

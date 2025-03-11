@@ -182,19 +182,19 @@ export class MessageComponent extends HTMLElement {
     const displayName = this._userName || (this._pubkey ? `${this._pubkey.substring(0, 10)}...` : 'King Piggy');
 
     this.innerHTML = `
-      <div class="mb-3 p-3 ${bgColorClass} rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200">
+      <div class="mb-3 p-3 ${bgColorClass} rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 w-full max-w-full">
         <div class="flex justify-between items-start">
           <span class="font-medium text-gray-900 hover:text-pink-600 transition-colors duration-150 message-username">${displayName}</span>
           <span class="text-xs text-gray-400 message-timestamp">${timeString}</span>
         </div>
-        <p class="mt-2 text-gray-800">${this._content}</p>
+        <p class="mt-2 text-gray-800 break-words whitespace-normal overflow-wrap-anywhere" style="word-wrap: break-word; overflow-wrap: break-word; word-break: break-word; max-width: 100%;">${this._content}</p>
         ${this._isEncrypted ? 
           `<div class="text-xs ${encryptionClass} mt-2 flex items-center">
-            <span class="mr-1">${this._isForCurrentUser ? '🥓' : '🐽'}</span>
-            <span>encrypted message</span>
-          </div>` 
-        : ''}
-        </div>
+              <span class="mr-1">${this._isForCurrentUser ? '🥓' : '🐽'}</span>
+              <span>encrypted message</span>
+            </div>` 
+            : ''}
+      </div>
     `;
 
     // Attach click handlers after rendering

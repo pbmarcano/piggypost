@@ -106,16 +106,16 @@ export class SystemMessageComponent extends HTMLElement {
     const timeString = this._timestamp ? this.formatRelativeTime(this._timestamp) : '';
 
     this.innerHTML = `
-      <div class="mb-3 p-3 bg-gray-50 rounded-lg shadow-sm border-l-4 border-pink-300">
-          <div class="flex justify-between items-start">
-            <span class="text-gray-500 text-sm font-medium flex items-center">
-              <span class="mr-1">🐷</span>System
+      <div class="mb-3 p-3 bg-gray-50 rounded-lg shadow-sm border-l-4 border-pink-300 w-full max-w-full">
+        <div class="flex justify-between items-start">
+          <span class="text-gray-500 text-sm font-medium flex items-center">
+            <span class="mr-1">🐷</span>System
           </span>
-            <span class="text-xs text-gray-400 message-timestamp">${timeString}</span>
-          </div>
-          <p class="mt-1 text-gray-600 italic">${this._content}</p>
+          <span class="text-xs text-gray-400 message-timestamp">${timeString}</span>
         </div>
-      `;
+        <p class="mt-1 text-gray-600 italic break-words whitespace-normal" style="word-wrap: break-word; overflow-wrap: break-word; word-break: break-word; max-width: 100%;">${this._content}</p>
+      </div>
+    `;
   }
 
   // Static method to create a system message
