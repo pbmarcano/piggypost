@@ -42,8 +42,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Listen for profile changes
     profileComponent.addEventListener('profile-changed', (event) => {
       const { name, about } = event.detail;
+
       if (typeof sendKind0Profile === "function") {
         sendKind0Profile(name, about);
+      } else {
+        console.error("sendKind0Profile is not a function!", typeof sendKind0Profile);
       }
     });
 

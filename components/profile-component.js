@@ -71,6 +71,8 @@ export class PiggyProfile extends HTMLElement {
       localStorage.setItem('about', about);
 
       this.render();
+      // Re-attach event listeners after re-rendering
+      this.setupEventListeners();
 
       // Dispatch an event when the profile changes
       this.dispatchEvent(new CustomEvent('profile-changed', {
