@@ -30,10 +30,11 @@ export class ChatFeedComponent extends HTMLElement {
     this.style.flex = '1';
     this.style.minHeight = '0'; // Important for Firefox
     this.style.height = '100%';
+    this.style.position = 'relative'; // Add position context
 
     // Create the basic structure
     this.innerHTML = `
-      <div class="h-full w-full p-4 overflow-y-auto flex flex-col space-y-1" id="messages-container">
+      <div class="h-full w-full p-4 overflow-y-auto flex flex-col space-y-1" id="messages-container" style="-webkit-overflow-scrolling: touch; overflow-y: scroll; position: absolute; top: 0; left: 0; right: 0; bottom: 0;">
         <!-- Messages will be displayed here -->
         <div class="text-center p-4">
           <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-pink-100 mb-3">
@@ -134,10 +135,21 @@ export class ChatFeedComponent extends HTMLElement {
 
       // Use setTimeout to ensure the DOM has updated
       setTimeout(() => {
-        container.scrollTop = container.scrollHeight;
+        // For Safari, we need to be more explicit
+        const scrollHeight = container.scrollHeight;
+        const clientHeight = container.clientHeight;
+        container.scrollTop = scrollHeight - clientHeight;
+
+        // iOS Safari sometimes needs a second attempt
+        setTimeout(() => {
+          if (container.scrollTop < scrollHeight - clientHeight - 10) {
+            container.scrollTop = scrollHeight - clientHeight;
+          }
+        }, 50);
+
         console.log('Set scrollTop to:', container.scrollHeight);
         console.log('Current scrollTop:', container.scrollTop);
-      }, 0);
+      }, 10); // Slightly longer timeout
     }
   }
 
