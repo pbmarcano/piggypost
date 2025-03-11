@@ -14,13 +14,32 @@ let chatFeed;
 
 // Initialize relay connection
 let relay;
+let isRelayConnected = false;
+let pendingEvents = [];
 
 // Current active recipient for encrypted messages (null when in public mode)
 let currentRecipient = null;
 
 async function connectToRelays() {
-  relay = await Relay.connect('wss://relay.primal.net');
-  console.log(`connected to ${relay.url}`);
+  try {
+    relay = await Relay.connect('wss://relay.primal.net');
+    console.log(`connected to ${relay.url}`);
+    isRelayConnected = true;
+
+    // Send any pending events that happened before connection
+    if (pendingEvents.length > 0) {
+      console.log(`Sending ${pendingEvents.length} pending events`);
+      for (const eventData of pendingEvents) {
+        await relay.publish(eventData);
+      }
+      pendingEvents = [];
+    }
+
+    return relay;
+  } catch (error) {
+    console.error("Failed to connect to relay:", error);
+    throw error;
+  }
 }
 
 /**
@@ -28,9 +47,25 @@ async function connectToRelays() {
  * @param {Object} eventData - The event data to send.
  */
 async function sendNostrEvent(eventData) {
-  if (verifyEvent(eventData)) {
-    console.log("Sending Nostr Event:", eventData);
-    await relay.publish(eventData)
+  if (!verifyEvent(eventData)) {
+    console.error("Failed to verify event:", eventData);
+    return;
+  }
+
+  console.log("Sending Nostr Event:", eventData);
+
+  if (isRelayConnected && relay) {
+    // If relay is connected, send immediately
+    try {
+      await relay.publish(eventData);
+      console.log("Event published successfully");
+    } catch (error) {
+      console.error("Error publishing event:", error);
+    }
+  } else {
+    // Otherwise queue for later sending
+    console.log("Relay not connected yet, queueing event for later");
+    pendingEvents.push(eventData);
   }
 }
 
